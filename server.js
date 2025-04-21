@@ -1,0 +1,34 @@
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv').config();
+const registerRouter = require('./routes/route');
+const verifyEmail = require('./routes/route');
+const continueApp = require('./routes/cotinueApplicationRoute');
+const applications = require('./routes/application');
+const getstudent = require('./routes/getStudent');
+const paystack = require('./helper/paystack');
+const paymentDetails = require('./routes/payments');
+const password = require('./routes/changepass');
+const app = express();
+
+
+app.use(express.static('public'));
+app.use(cors());
+app.use(express.json()); 
+
+app.use('/api/register', registerRouter);
+app.use('/api/tokenverify', verifyEmail);
+app.use('/api/continueApplication', continueApp);
+app.use('/api/application', applications);
+app.use('/api/getstd', getstudent);
+app.use('/api/paystack', paystack);
+app.use('/api/payment', paymentDetails);
+app.use('/api/changepassword', password);
+
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Export the server as a handler for Vercel
+module.exports = app;
