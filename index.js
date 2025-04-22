@@ -14,14 +14,13 @@ const app = express();
 app.use(express.static('public'))
 // Middleware
 app.use(cors());
-app.use(express.json()); // to parse JSON request bodies
+app.use(express.json()); 
 
-// Register the router on the correct endpoint
-app.use('/api/register', registerRouter); // Use app.use() instead of app.post()
+app.use('/api/register', registerRouter);
 // app.use('/api/students', students);
 app.use('/api/tokenverify', verifyEmail);
 //login to continue route
-app.use('/api/continueApplication', continueApp); // Continue application route (fixed typo here)
+app.use('/api/continueApplication', continueApp);
 app.use('/api/application', applications)
 app.use('/api/getstd', getstudent)
 app.use('/api/paystack', paystack)
