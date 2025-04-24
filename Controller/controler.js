@@ -176,7 +176,7 @@ async function verifyEmail(email) {
 
 //save payment
 async function savePayment(email, amount, reference, purpose, status, channel) {
-// async function savePayment(email, amount, reference, purpose) {
+    // async function savePayment(email, amount, reference, purpose) {
     const query = "INSERT INTO payments(email, amount, reference, purpose,status,channel)VALUES(?,?,?,?,?,?)";
     try {
         const [result] = await db.execute(query, [email, amount, reference, purpose, status, channel])
@@ -229,7 +229,7 @@ async function changepassword(email, oldpassword, newpassword) {
     return { message: 'Password successfully updated', success: true };
 }
 
-async function test(username,email,passport) {
+async function test(username, email, passport) {
     const q = "INSERT INTO test(username,email,pasport)VLAUES(?,?,?)"
     try {
         const [result] = await db.execute(q, [username, email, passport])
@@ -240,4 +240,4 @@ async function test(username,email,passport) {
     }
 }
 
-module.exports = { changepassword, getUser, Register, emailExist, updateUser, getUserByToken, verifyEmail, savePayment, applicationEmailexist, applicationForm, getTransaction,test }
+module.exports = { changepassword, getUser, Register, emailExist, updateUser, getUserByToken, verifyEmail, savePayment, applicationEmailexist, applicationForm, getTransaction, test }

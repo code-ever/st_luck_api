@@ -43,28 +43,33 @@ route.post('/', upload.single('passport'), async (req, res) => {
 
         const secure_url = uploadResult.secure_url;
 
-        //hashpassword
-        const hashed = await bcryptjs.hash(password, 10)
 
-        // Save data using the Register function
+        const hashed = await bcryptjs.hash(password, 10);
+
         const saveData = await Register(fullname, dob, gender, so, nationality, lga, address, number, email, hashed, secure_url);
         if (saveData) {
-            const randomToken = randomstring.generate()
-            const subjectEmail = 'Verify Registration'
+            const randomToken = randomstring.generate();
+            const subjectEmail = 'Verify Registration';
             const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
-            sendEmail(email, subjectEmail, content);
-            const updateToken = await updateUser(randomToken, email);
+
+            await sendEmail(email, subjectEmail, content);
+
+            await updateUser(randomToken, email);
 
             return res.status(200).json({ message: "Registration Successful. Please check your email for verification.", data: saveData });
+        } else {
+            return res.status(400).json({ message: "Registration failed. Please try again." });
         }
-
     } catch (error) {
         console.error("Error: ", error);
-        return res.status(500).json({
-            message: 'Something went wrong',
-            error: error.message
-        });
+        // Handle errors and ensure only one response is sent
+        if (!res.headersSent) {
+            return res.status(500).json({
+                message: 'Something went wrong',
+                error: error.message
+            });
+        }
     }
 });
 
-module.exports = route
+module.exports = route;
