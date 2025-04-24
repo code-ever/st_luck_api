@@ -45,17 +45,17 @@ route.post('/', upload.single('passport'), async (req, res) => {
 
         //hashpassword
         const hashed = await bcryptjs.hash(password, 10)
-    
+
         // Save data using the Register function
         const saveData = await Register(fullname, dob, gender, so, nationality, lga, address, number, email, hashed, secure_url);
         if (saveData) {
             const randomToken = randomstring.generate()
-            const subjectEmail = 'Verify Registration' 
-            const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;           
+            const subjectEmail = 'Verify Registration'
+            const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
             sendEmail(email, subjectEmail, content);
             const updateToken = await updateUser(randomToken, email);
 
-            return res.status(200).json({ message: "Registration Successful. Please check your email for verification.",data: saveData });
+            return res.status(200).json({ message: "Registration Successful. Please check your email for verification.", data: saveData });
         }
 
     } catch (error) {
