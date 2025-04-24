@@ -3,20 +3,33 @@ const bcrypt = require('bcryptjs');
 
 //register student
 async function Register(fullname, dob, gender, so, nationality, lga, address, number, email, password, passport) {
-    const Emailexist = await emailExist(email)
+    const Emailexist = await emailExist(email);
     if (Emailexist) {
         throw new Error('Email Exist');
     }
 
-    const query = "INSERT INTO std_table(fullname, dob, gender, so, nationality, lga, address, number, email,password,passport) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+    const query = "INSERT INTO std_table(fullname, dob, gender, so, nationality, lga, address, number, email, password, passport) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+
     try {
         const [result] = await db.execute(query, [fullname, dob, gender, so, nationality, lga, address, number, email, password, passport]);
-        return result;
+        return {
+            fullname,
+            dob,
+            gender,
+            so,
+            nationality,
+            lga,
+            address,
+            number,
+            email,
+            passport
+        }
     } catch (error) {
-        // console.error('Failed to insert:', error);
+        console.error('Failed to insert:', error);
         throw new Error('Failed to insert');
     }
 }
+
 
 //application
 
@@ -216,5 +229,15 @@ async function changepassword(email, oldpassword, newpassword) {
     return { message: 'Password successfully updated', success: true };
 }
 
+async function test(username,email,passport) {
+    const q = "INSERT INTO test(username,email,pasport)VLAUES(?,?,?)"
+    try {
+        const [result] = await db.execute(q, [username, email, passport])
+        return result
+    } catch (error) {
+        console.error('fial to insert',)
+        throw error
+    }
+}
 
-module.exports = { changepassword, getUser, Register, emailExist, updateUser, getUserByToken, verifyEmail, savePayment, applicationEmailexist, applicationForm, getTransaction }
+module.exports = { changepassword, getUser, Register, emailExist, updateUser, getUserByToken, verifyEmail, savePayment, applicationEmailexist, applicationForm, getTransaction,test }

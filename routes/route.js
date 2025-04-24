@@ -1,59 +1,68 @@
 const db = require('../db/connetDB');
 const express = require('express');
 const bcryptjs = require('bcryptjs');
-const { emailExist, Register, updateUser, getUserByToken, verifyEmail } = require('../Controller/controler');  // Ensure correct path to the file
+const { emailExist, Register, updateUser, getUserByToken, verifyEmail } = require('../Controller/controler');
 const randomstring = require('randomstring');
 const sendEmail = require('../helper/sendEmail');
 const route = express.Router();
-const upload =  require('../routes/uploading/fileupload')
+const upload = require('../routes/uploading/fileupload');
+const cloudinary = require('../utils/cloudinary');
 
-// Register route to handle file upload and user registration
-route.post("/", upload.single('passport'), async (req, res) => {  // 'passport' is the field name from your front-end
+route.post("/", upload.single('passport'), async (req, res) => {
     const { fullname, dob, gender, so, nationality, lga, address, number, password, email } = req.body;
-    console.log(req.body)
+
     // Check if any required fields are missing
     if (!fullname || !dob || !gender || !so || !nationality || !lga || !address || !number || !password || !email || !req.file) {
         return res.status(401).json({ message: 'Please fill in all the fields including passport image' });
     }
 
     try {
-        // Check if email already exists
         const emailEx = await emailExist(email);
         if (emailEx) {
             return res.status(401).json({ message: 'E-mail already exists' });
         }
 
-        // Generate a random password and hash it
-       // const password = randomstring.generate();
+        // Hash the password
         const hashedPassword = await bcryptjs.hash(password, 10);
 
+        // Upload the passport image to Cloudinary
+        const imageFile = req.file;
+        if (!imageFile) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const { originalname, mimetype, buffer } = imageFile;
+
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, { 
+            resource_type: 'auto',  
+            public_id: `passport/${email}_${originalname}`,  
+        }).catch((error) => {
+            console.error('Error uploading to Cloudinary:', error);
+            return res.status(500).json({ message: 'Error uploading passport image' });
+        });
+
+        const passportUrl = uploadResult.secure_url;
+
         // Register the user in the database
-        const resultSave = await Register(fullname, dob, gender, so, nationality, lga, address, number, email, hashedPassword, req.file.filename);  // Save passport file name
+        const resultSave = await Register(fullname, dob, gender, so, nationality, lga, address, number, email, hashedPassword, passportUrl);
 
         if (resultSave) {
-            // Generate a random token for email verification
             const randomToken = randomstring.generate();
             const subjectEmail = 'Mail Verification';
-            const content = `<p>Hi ${fullname}, Please <a href="http://localhost:8080/api/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
+            const content = `<p>Hi ${fullname}, Please <a href="http://localhost:8080/api/tokenverify?is_verify=${randomToken}">verify</a> your email.</p>`;
 
-            // Send email with verification link
             sendEmail(email, subjectEmail, content);
+            await updateUser(randomToken, email);
 
-            // Update user with the verification token
-            const updateToken = await updateUser(randomToken, email);
-
-            // Respond with success message
             return res.status(200).json({ message: "Registration Successful. Please check your email for verification." });
         } else {
             return res.status(500).json({ message: 'Failed to register user' });
         }
-
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error in registration:', error);
         return res.status(500).json({ message: 'Something went wrong during registration' });
     }
 });
-
 
 //get users
 // route.get("/", async (req, res) => {
@@ -75,7 +84,7 @@ route.get("/", async (req, res) => {
     const { is_verify } = req.query;
     try {
         if (!is_verify) {
-            return res.status(400).json({ message: 'Token is missing' }); 
+            return res.status(400).json({ message: 'Token is missing' });
         }
         const user = await getUserByToken(is_verify);
         if (!user) {
