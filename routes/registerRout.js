@@ -1,7 +1,7 @@
 const db = require('../db/connetDB');
 const express = require('express');
 const bcryptjs = require('bcryptjs');
-const { emailExist, Register, verifyEmail, updateUser } = require('../Controller/controler');
+const { emailExist, Register, verifyEmail, getUser, updateUser } = require('../Controller/controler');
 const randomstring = require('randomstring');
 const sendEmail = require('../helper/sendEmail');
 const route = express.Router();
@@ -72,8 +72,18 @@ route.post('/', upload.single('passport'), async (req, res) => {
     }
 });
 
-route.get("/", async (req,res) => {
-    res.status(200).json({message:'get student is working'})
-})
+route.get("/", async (req, res) => {
+    try {
+        const students = await getUser();
+
+        if (!students) {
+            return res.status(400).json({ message: 'No student found' });
+        }
+
+       return  res.status(200).json({ message: 'Student found', data: students });
+    } catch (error) {
+        res.status(500).json({ message: 'Something went wrong', error: error.message });
+    }
+});
 
 module.exports = route;
