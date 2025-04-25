@@ -79,8 +79,8 @@ route.get("/", async (req, res) => {
         if (!students) {
             return res.status(400).json({ message: 'No student found' });
         }
-
-       return  res.status(200).json({ message: 'Student found', data: students });
+        return res.status(200).json({ message: 'Student found', data: students });
+        
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong', error: error.message });
     }
