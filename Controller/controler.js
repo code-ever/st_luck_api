@@ -105,14 +105,21 @@ async function emailExist(email) {
     }
 }
 //get students
-async function getUser(email) {
-    const query = "SELECT * FROM std_table WHERE email = ?";
+async function getUser(email = null) {
+    let query;
+    let params = [];
+    if (email) {
+        query = "SELECT * FROM std_table WHERE email = ?";
+        params = [email];
+    } else {
+        query = "SELECT * FROM std_table";
+    }
     try {
-        const [result] = await db.execute(query, [email]);
+        const [result] = await db.execute(query, params);
         if (result.length === 0) {
             return null;  
         }
-        return result[0];  
+        return result;  
     } catch (error) {
         console.error('Error fetching user:', error);
         throw new Error('Error fetching user details from the database');
