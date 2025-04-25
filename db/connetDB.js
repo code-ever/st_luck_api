@@ -7,14 +7,4 @@ const db = mysql2.createConnection({
     database: process.env.DB_DBNAME
 }).promise();
 
-
-async function queryDatabase() {
-    try {
-        const [rows, fields] = await db.execute('SELECT * FROM std_table');
-        console.log(rows);
-    } catch (err) {
-        console.error('Database query failed:', err);
-    }
-}
-queryDatabase()
 module.exports = db
