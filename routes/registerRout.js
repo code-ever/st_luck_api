@@ -73,8 +73,9 @@ route.post('/', upload.single('passport'), async (req, res) => {
 });
 
 route.get("/", async (req, res) => {
+    const {email} = req.body
     try {
-        const students = await getUser();
+        const students = await getUser(email);
 
         if (!students) {
             return res.status(400).json({ message: 'No student found' });
