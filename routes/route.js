@@ -64,21 +64,6 @@ route.post("/", upload.single('passport'), async (req, res) => {
     }
 });
 
-//get users
-// route.get("/", async (req, res) => {
-//     const email = req.query.email;  // Access email from query string
-//     try {
-//         const user = await getUser(email);  // Assuming emailExist is an async function
-//         if (user) {
-//             res.status(200).json({ message: user });  // Respond with user data
-//         } else {
-//             return res.status(404).json({ message: 'User not found' });
-//         }
-//     } catch (error) {
-//         console.log(error.message);  // Log the error for debugging
-//         return res.status(500).json({ message: 'Something went wrong', error });
-//     }
-// });
 
 route.get("/", async (req, res) => {
     const { is_verify } = req.query;

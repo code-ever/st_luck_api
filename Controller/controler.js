@@ -106,22 +106,15 @@ async function emailExist(email) {
 }
 //get students
 async function getUser(email) {
-    // SQL query to fetch user by email
     const query = "SELECT * FROM std_table WHERE email = ?";
     try {
-        // Execute query and pass email as a parameter
         const [result] = await db.execute(query, [email]);
-        // If no user is found, return null
         if (result.length === 0) {
-            return null;  // Or you could return an empty object depending on your needs
+            return null;  
         }
-        return result[0];  // Return the first matching result
-
+        return result[0];  
     } catch (error) {
-        // Log the error for debugging
         console.error('Error fetching user:', error);
-
-        // Throw a more specific error message
         throw new Error('Error fetching user details from the database');
     }
 }

@@ -72,4 +72,8 @@ route.post('/', upload.single('passport'), async (req, res) => {
     }
 });
 
+route.get("/", async (req,res) => {
+    res.status(200).json({message:'get student is working'})
+})
+
 module.exports = route;
