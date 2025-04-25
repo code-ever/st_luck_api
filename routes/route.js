@@ -49,8 +49,7 @@ route.post("/", upload.single('passport'), async (req, res) => {
         if (resultSave) {
             const randomToken = randomstring.generate();
             const subjectEmail = 'Mail Verification';
-            const content = `<p>Hi ${fullname}, Please <a href="http://localhost:8080/api/tokenverify?is_verify=${randomToken}">verify</a> your email.</p>`;
-
+            const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.</p>`;
             sendEmail(email, subjectEmail, content);
             await updateUser(randomToken, email);
 
