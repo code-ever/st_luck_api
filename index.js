@@ -10,6 +10,7 @@ const applications = require('./routes/application');
 const getstudent = require('./routes/getStudent');
 const paystack = require('./helper/paystack');
 const paymentDetails = require('./routes/payments');
+const testmail = require('./routes/CheckMail');
 const password = require('./routes/changepass');
 const app = express();
 app.use(express.static('public'))
@@ -30,7 +31,7 @@ app.use('/api/payment', paymentDetails)
 app.use('/api/changepassword', password)
 
 app.use('/api/registerRout', registerRout)
-
+app.use('/api/testmail', testmail)
 const port = process.env.PORT || 8081;
 app.listen(port, () => {
     console.log("Running on port " + port);

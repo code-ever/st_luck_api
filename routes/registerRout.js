@@ -7,6 +7,7 @@ const sendEmail = require('../helper/sendEmail');
 const route = express.Router();
 const upload = require('../routes/uploading/fileupload');
 const cloudinary = require('../utils/cloudinary');
+const sendMailgun = require('../helper/mailgun') 
 
 route.post('/', upload.single('passport'), async (req, res) => {
     const { fullname, dob, gender, so, nationality, lga, address, number, email, password } = req.body;
@@ -53,6 +54,7 @@ route.post('/', upload.single('passport'), async (req, res) => {
             const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
 
             await sendEmail(email, subjectEmail, content);
+            await sendMailgun(message='message', email, subject='testing email')
 
             await updateUser(randomToken, email);
 
