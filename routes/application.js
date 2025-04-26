@@ -4,6 +4,8 @@ const upload = require("../routes/uploading/fileupload");
 const sendEmail = require('../helper/sendEmail');
 const cloudinary = require('../utils/cloudinary');
 const route = express.Router();
+const uploadCloudinary = require('../utils/uploadCloudinary')
+
 
 route.post("/", upload.fields([
     { name: 'waec_neco', maxCount: 1 },
@@ -25,29 +27,30 @@ route.post("/", upload.fields([
         if (!programme_of_interest || !course_of_study || !mode_of_study || !preferred_university || !email) {
             return res.status(409).json({ message: "Check if fields are empty" });
         }
-        // Check if email exists (if provided)
-        //const user = await applicationEmailexist(email);
 
+        // Initialize an object to store the URLs for each file uploaded
         const uploadedFiles = {};
 
-        for (const field of [
-            "waec_neco", "jamb_result", "transcript", "nysc", "hndcertificate", "affidavit", "masters_certificate"
-        ]) {
-            if (req.files && req.files[field]) {
-                const filePath = req.files[field][0]?.path;
-                try {
-                    const cloudinaryUpload = await cloudinary.uploader.upload(filePath);
-                    uploadedFiles[field] = cloudinaryUpload.secure_url;
-                } catch (error) {
-                    console.error(`Error uploading ${field} to Cloudinary:`, error);
-                    uploadedFiles[field] = null;
+        // Array of possible file fields to check and upload
+        const fileFields = [
+            'waec_neco', 'jamb_result', 'transcript', 'nysc',
+            'hndcertificate', 'affidavit', 'masters_certificate'
+        ];
+
+        try {
+            for (let field of fileFields) {
+                if (req.files[field] && req.files[field].length > 0) {
+                    const file = req.files[field][0]; 
+                    const cloudinaryUpload = await uploadCloudinary(file);
+                    uploadedFiles[field] = cloudinaryUpload.secure_url; 
                 }
-            } else {
-                uploadedFiles[field] = null;
             }
+        } catch (fileUploadError) {
+            console.error("Error uploading files:", fileUploadError);
+            return res.status(500).json({ message: "Error uploading files", error: fileUploadError.message });
         }
 
-        // Save application to the database
+        
         try {
             const saveApplication = await applicationForm(
                 programme_of_interest, course_of_study, mode_of_study, preferred_university, email,
@@ -59,14 +62,14 @@ route.post("/", upload.fields([
                 uploadedFiles.masters_certificate
             );
 
-            // Send email
+            // Send confirmation email to the user
             const subjectEmail = 'Mail Verification';
             const content = `
                 <p>Hi,</p>
                 <p>Your application has been submitted successfully.</p>
             `;
             try {
-                await sendEmail(email, subjectEmail, content);  // Wait for the email to be sent
+                await sendEmail(email, subjectEmail, content); // Send the email
             } catch (emailError) {
                 console.error("Error sending email:", emailError);
             }
@@ -86,6 +89,7 @@ route.post("/", upload.fields([
         return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 });
+
 
 route.get("/", async (req, res) => {
     const {email} = req.body
