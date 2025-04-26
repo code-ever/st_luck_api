@@ -93,5 +93,17 @@ route.post("/", upload.fields([
     }
 });
 
+route.get("/", async (req, res) => {
+    const {email} = req.body
+    try {
+        const student = await applicationEmailexist(email)
+        if (!student) {
+            return res.status(409).json({ message: "Student with this email cant be found" });
+        }
+        return res.status(200).json({ message: "User Student Exixt", data:student});
+    } catch (error) {
+        
+    }
+})
 module.exports = route;
 

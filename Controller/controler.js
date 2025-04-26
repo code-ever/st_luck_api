@@ -66,28 +66,26 @@ async function applicationForm(
 }
 
 //check if email exist in applaiction table
-async function applicationEmailexist(email) {
-
-    const query = `
+async function applicationEmailexist(email = null) {
+    let query = `
         SELECT application.*, std_table.* 
         FROM application
         LEFT JOIN std_table ON application.email = std_table.email
-        WHERE application.email = ?;
     `;
+    const params = [];
+    if (email) {
+        query += ` WHERE application.email = ?`;
+        params.push(email);
+    }
     try {
-        const [result] = await db.execute(query, [email]);
-
-        // If the query returns no rows, return null
+        const [result] = await db.execute(query, params);
         if (result.length === 0) {
-            return null;
+            return [];
         }
-
-        // Return the first result if found
-        return result[0];
+        return result;
     } catch (error) {
-        // Log the error to help with debugging
         console.error("Error:", error);
-        throw new Error('Database query failed'); // Rethrow the error to be handled in the route
+        throw new Error('Database query failed');
     }
 }
 

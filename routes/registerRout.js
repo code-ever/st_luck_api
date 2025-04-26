@@ -7,7 +7,7 @@ const sendEmail = require('../helper/sendEmail');
 const route = express.Router();
 const upload = require('../routes/uploading/fileupload');
 const cloudinary = require('../utils/cloudinary');
-const sendMailgun = require('../helper/mailgun') 
+const sendMailgun =  require('../helper/mailgun') 
 
 route.post('/', upload.single('passport'), async (req, res) => {
     const { fullname, dob, gender, so, nationality, lga, address, number, email, password } = req.body;
