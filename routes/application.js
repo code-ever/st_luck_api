@@ -25,14 +25,8 @@ route.post("/", upload.fields([
         if (!programme_of_interest || !course_of_study || !mode_of_study || !preferred_university || !email) {
             return res.status(409).json({ message: "Check if fields are empty" });
         }
-
         // Check if email exists (if provided)
-        if (email) {
-            const user = await applicationEmailexist(email);
-            if (user) {
-                return res.status(409).json({ message: "User with this email already exists" });
-            }
-        }
+        //const user = await applicationEmailexist(email);
 
         const uploadedFiles = {};
 
