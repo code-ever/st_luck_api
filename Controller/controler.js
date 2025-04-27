@@ -32,7 +32,6 @@ async function Register(fullname, dob, gender, so, nationality, lga, address, nu
 
 
 //application
-
 async function applicationForm(
     programme_of_interest, course_of_study, mode_of_study, preferred_university, email,
     subject1, grade1, subject2, grade2, subject3, grade3, subject4, grade4, subject5, grade5,

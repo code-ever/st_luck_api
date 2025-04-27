@@ -4,8 +4,7 @@ const upload = require("../routes/uploading/fileupload");
 const sendEmail = require('../helper/sendEmail');
 const cloudinary = require('../utils/cloudinary');
 const route = express.Router();
-const uploadCloudinary = require('../utils/uploadCloudinary')
-
+const uploadCloudinary = require('../utils/uploadCloudinary');
 
 route.post("/", upload.fields([
     { name: 'waec_neco', maxCount: 1 },
@@ -24,6 +23,7 @@ route.post("/", upload.fields([
             achieved_grade, year_of_service, institution_name, topic
         } = req.body;
 
+        // Validate essential fields
         if (!programme_of_interest || !course_of_study || !mode_of_study || !preferred_university || !email) {
             return res.status(409).json({ message: "Check if fields are empty" });
         }
@@ -38,11 +38,14 @@ route.post("/", upload.fields([
         ];
 
         try {
+            // Iterate over each file field, upload to Cloudinary if provided
             for (let field of fileFields) {
                 if (req.files[field] && req.files[field].length > 0) {
-                    const file = req.files[field][0]; 
+                    const file = req.files[field][0];
                     const cloudinaryUpload = await uploadCloudinary(file);
-                    uploadedFiles[field] = cloudinaryUpload.secure_url; 
+                    uploadedFiles[field] = cloudinaryUpload.secure_url; // Store only secure_url
+                } else {
+                    uploadedFiles[field] = null; // If file not uploaded, store null
                 }
             }
         } catch (fileUploadError) {
@@ -50,7 +53,7 @@ route.post("/", upload.fields([
             return res.status(500).json({ message: "Error uploading files", error: fileUploadError.message });
         }
 
-        
+        // Insert application data into the database
         try {
             const saveApplication = await applicationForm(
                 programme_of_interest, course_of_study, mode_of_study, preferred_university, email,
@@ -81,7 +84,7 @@ route.post("/", upload.fields([
 
         } catch (dbError) {
             console.error("Database error:", dbError);
-            return res.status(500).json({ message: "Error saving application to the database.", error: dbError.message });
+            return res.status(500).json({ message: "Error,Application Filed to submit.", error: dbError.message });
         }
 
     } catch (error) {
@@ -90,18 +93,4 @@ route.post("/", upload.fields([
     }
 });
 
-
-route.get("/", async (req, res) => {
-    const {email} = req.body
-    try {
-        const student = await applicationEmailexist(email)
-        if (!student) {
-            return res.status(409).json({ message: "Student with this email cant be found" });
-        }
-        return res.status(200).json({ message: "User Student Exixt", data:student});
-    } catch (error) {
-        
-    }
-})
 module.exports = route;
-
