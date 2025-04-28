@@ -1,8 +1,8 @@
 const express = require("express");
-const { applicationEmailexist, applicationForm } = require("../Controller/controler");
+const { applicationEX, applicationForm } = require("../Controller/controler");
 const upload = require("../routes/uploading/fileupload");
 const sendEmail = require('../helper/sendEmail');
-const sendMailgun = require('../helper/mailgun')
+const sendMailgun = require('../helper/mailgun');
 const route = express.Router();
 const uploadCloudinary = require('../utils/uploadCloudinary');
 
@@ -20,14 +20,18 @@ route.post("/", upload.fields([
             programme_of_interest, course_of_study, mode_of_study, preferred_university, email,
             subject1, grade1, subject2, grade2, subject3, grade3, subject4, grade4, subject5, grade5,
             jambrag_no, jamb_score, degree_title, name_of_university, year_of_graduation,
-            achieved_grade, year_of_service, institution_name, topic,fullname
+            achieved_grade, year_of_service, institution_name, topic, fullname
         } = req.body;
 
         // Validate essential fields
         if (!programme_of_interest || !course_of_study || !mode_of_study || !preferred_university || !email) {
-            return res.status(409).json({ message: "Check if fields are empty" });
+            return res.status(400).json({ message: "Some required fields are missing" });
         }
 
+        const existingUser = await applicationEX(email);
+        if (existingUser) {
+            return res.status(400).json({ message: "This email is already registered" });
+        }
         // Initialize an object to store the URLs for each file uploaded
         const uploadedFiles = {};
 
@@ -49,7 +53,6 @@ route.post("/", upload.fields([
                 }
             }
         } catch (fileUploadError) {
-          // console.error("Error uploading files:", fileUploadError);
             return res.status(500).json({ message: "Error uploading files", error: fileUploadError.message });
         }
 
@@ -62,26 +65,32 @@ route.post("/", upload.fields([
                 achieved_grade, year_of_service, institution_name, topic,
                 uploadedFiles.transcript, uploadedFiles.hndcertificate, uploadedFiles.nysc,
                 uploadedFiles.waec_neco, uploadedFiles.affidavit, uploadedFiles.jamb_result,
-                uploadedFiles.masters_certificate,fullname
+                uploadedFiles.masters_certificate, fullname
             );
+
             // Send confirmation email to the user
             const subjectEmail = 'Verify Registration';
             const content = `
-            <div style=''><p>Hi <br> Thank you for submitting your application to St. Luck Business School. We are pleased to inform you that we have received your application and it is currently being processed.<br>
-            Please keep an eye on your email for any updates regarding the admission list. We will notify you of the next steps as soon as the list is available.<br />Should you have any further questions, feel free to reach out to us.
-            We wish you the best of luck and look forward to the possibility of welcoming you to our institution!<br />
-            Kind regards,
-            <div>
-            <p>Admissions Office</p>
-            <p>St. Luck Business School</p>
-            Name name of admission officer
-            </div>
-            </div>
-          `;
-            //  await sendEmail(email, subjectEmail, content);
-            await sendMailgun(content, email, subjectEmail)
-        
-           
+                <div style='display: flex; justify-content: center; align-items: center; height: 100vh;'>
+                    <div style='background-color: white; width: 400px; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);border:1px solid blue;'>
+                        <p style="font-weight:bolder">Hi, ${fullname}</p>
+                        <p>Thank you for submitting your application to St. Luck Business School. We are pleased to inform you that we have received your application, and it is currently being processed.</p>
+                        <p>Please keep an eye on your email for any updates regarding the admission list. We will notify you of the next steps as soon as the list is available.</p>
+                        <p>Should you have any further questions, feel free to reach out to us.</p>
+                        <p>We wish you the best of luck and look forward to the possibility of welcoming you to our institution!</p>
+                        <br />
+                        <div style="font-weight:bolder">
+                            <p>Kind regards,</p>
+                            <p>Admissions Office</p>
+                            <p>St. Luck Business School</p>
+                            <p>Name of Admission Officer</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Call the Mailgun function for sending email
+            await sendMailgun(content, email, subjectEmail);
 
             return res.status(201).json({
                 message: "Application submitted successfully",
@@ -90,7 +99,7 @@ route.post("/", upload.fields([
 
         } catch (dbError) {
             console.error("Database error:", dbError);
-            return res.status(500).json({ message: "Error,Application Filed to submit.", error: dbError.message });
+            return res.status(500).json({ message: "Error, application failed to submit.", error: dbError.message });
         }
 
     } catch (error) {

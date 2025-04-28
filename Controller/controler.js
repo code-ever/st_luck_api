@@ -91,6 +91,18 @@ async function applicationEmailexist(email = null) {
 
 //check if user exist
 // Check if email exists
+async function applicationEX(email) {
+    const query = "SELECT * FROM application WHERE email=?";
+    try {
+        const [result] = await db.execute(query, [email]);
+        return result.length > 0 ? result[0] : null; // return true if email exists, otherwise false
+    } catch (error) {
+        // console.error('cant find email', error)
+        throw new Error('Cant find email');
+    }
+}
+
+// Check if email exists
 async function emailExist(email) {
     const query = "SELECT * FROM std_table WHERE email=?";
     try {
@@ -236,4 +248,4 @@ async function test(username, email, passport) {
     }
 }
 
-module.exports = { changepassword, getUser, Register, emailExist, updateUser, getUserByToken, verifyEmail, savePayment, applicationEmailexist, applicationForm, getTransaction, test }
+module.exports = { applicationEX, changepassword, getUser, Register, emailExist, updateUser, getUserByToken, verifyEmail, savePayment, applicationEmailexist, applicationForm, getTransaction, test }
