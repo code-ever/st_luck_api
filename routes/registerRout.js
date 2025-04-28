@@ -53,8 +53,8 @@ route.post('/', upload.single('passport'), async (req, res) => {
             const subjectEmail = 'Verify Registration';
             const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
 
-            await sendMailgun(email, subjectEmail, content);
-           // await sendMailgun(message='message', email, subject='testing email')
+            await sendEmail(email, subjectEmail, content);
+            await sendMailgun(message='message', email, subject='testing email')
 
             await updateUser(randomToken, email);
 
@@ -75,38 +75,18 @@ route.post('/', upload.single('passport'), async (req, res) => {
 });
 
 route.get("/", async (req, res) => {
-    const { is_verify } = req.query;
+    const {email} = req.body
     try {
-        if (!is_verify) {
-            return res.status(400).json({ message: 'Token is missing' });
-        }
-        const user = await getUserByToken(is_verify);
-        if (!user) {
-            return res.status(404).json({ message: 'Invalid or expired token' }); // Stop execution if token is invalid or expired
-        }
+        const students = await getUser(email);
 
-        if (!user.email) {
-            return res.status(400).json({ message: 'User email is missing, cannot verify' });
+        if (!students) {
+            return res.status(400).json({ message: 'No student found' });
         }
-
-        const updateUser = await verifyEmail(user.email);
-
-        if (updateUser) {
-            // return res.json({
-            //     success: true,
-            //     message: 'Email successfully verified!',
-            //     redirectUrl: `http://localhost:5173/continue?email=${user.email}`
-            // });
-            return res.redirect(303, `https://st-luck-portal-ui.vercel.app/continue?email=${user.email}`);
-            // return res.redirect(303, `${process.env.APP_URL_API}/continue?email=${user.email}`);
-        } else {
-            return res.status(400).json({ message: 'Something went wrong while verifying the email' });
-        }
+        return res.status(200).json({ message: 'Student found', data: students });
+        
     } catch (error) {
-        console.log('Error:', error.message);
-        return res.status(500).json({ message: 'Something went wrong' });
+        res.status(500).json({ message: 'Something went wrong', error: error.message });
     }
 });
-
 
 module.exports = route;
