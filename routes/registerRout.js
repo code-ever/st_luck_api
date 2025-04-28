@@ -46,19 +46,24 @@ route.post('/', upload.single('passport'), async (req, res) => {
 
 
         const hashed = await bcryptjs.hash(password, 10);
+        const randomToken = randomstring.generate();
+        const subjectEmail = 'Verify Registration';
+        const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
 
-        const saveData = await Register(fullname, dob, gender, so, nationality, lga, address, number, email, hashed, secure_url);
-        if (saveData) {
-            const randomToken = randomstring.generate();
-            const subjectEmail = 'Verify Registration';
-            const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
-
-            await sendEmail(email, subjectEmail, content);
-            await sendMailgun(message='message', email, subject='testing email')
+        const sendm = await sendEmail(email, subjectEmail, content);
+        if (sendm) {
+            await sendMailgun(message = 'message', email, subject = 'testing email')
 
             await updateUser(randomToken, email);
 
-            return res.status(200).json({ message: "Registration Successful. Please check your email for verification.", data: saveData });
+            const saveData = await Register(fullname, dob, gender, so, nationality, lga, address, number, email, hashed, secure_url);
+            if (saveData) {
+
+
+                return res.status(200).json({ message: "Registration Successful. Please check your email for verification.", data: saveData });
+            } else {
+                return res.status(400).json({ message: "Registration failed. Please try again." });
+            }
         } else {
             return res.status(400).json({ message: "Registration failed. Please try again." });
         }
@@ -74,19 +79,54 @@ route.post('/', upload.single('passport'), async (req, res) => {
     }
 });
 
-route.get("/", async (req, res) => {
-    const {email} = req.body
-    try {
-        const students = await getUser(email);
+// route.get("/", async (req, res) => {
+//     const {email} = req.body
+//     try {
+//         const students = await getUser(email);
 
-        if (!students) {
-            return res.status(400).json({ message: 'No student found' });
-        }
-        return res.status(200).json({ message: 'Student found', data: students });
+//         if (!students) {
+//             return res.status(400).json({ message: 'No student found' });
+//         }
+//         return res.status(200).json({ message: 'Student found', data: students });
         
+//     } catch (error) {
+//         res.status(500).json({ message: 'Something went wrong', error: error.message });
+//     }
+// });
+
+route.get("/", async (req, res) => {
+    const { is_verify } = req.query;
+    try {
+        if (!is_verify) {
+            return res.status(400).json({ message: 'Token is missing' });
+        }
+        const user = await getUserByToken(is_verify);
+        if (!user) {
+            return res.status(404).json({ message: 'Invalid or expired token' }); // Stop execution if token is invalid or expired
+        }
+
+        if (!user.email) {
+            return res.status(400).json({ message: 'User email is missing, cannot verify' });
+        }
+
+        const updateUser = await verifyEmail(user.email);
+
+        if (updateUser) {
+            // return res.json({
+            //     success: true,
+            //     message: 'Email successfully verified!',
+            //     redirectUrl: `http://localhost:5173/continue?email=${user.email}`
+            // });
+            return res.redirect(303, `https://st-luck-portal-ui.vercel.app/continue?email=${user.email}`);
+            // return res.redirect(303, `${process.env.APP_URL_API}/continue?email=${user.email}`);
+        } else {
+            return res.status(400).json({ message: 'Something went wrong while verifying the email' });
+        }
     } catch (error) {
-        res.status(500).json({ message: 'Something went wrong', error: error.message });
+        console.log('Error:', error.message);
+        return res.status(500).json({ message: 'Something went wrong' });
     }
 });
+
 
 module.exports = route;
