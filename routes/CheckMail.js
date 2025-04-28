@@ -4,8 +4,7 @@ const sendMailgun = require('../helper/mailgun');
 
 route.post("/", async (req, res) => {
     const { email, message, subject } = req.body;
-console.log(req.body)
-  
+
     if (!email || !message || !subject) {
         return res.status(400).json({ message: 'Missing required fields: email, message, or subject.' });
     }
