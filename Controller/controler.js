@@ -37,7 +37,7 @@ async function applicationForm(
     subject1, grade1, subject2, grade2, subject3, grade3, subject4, grade4, subject5, grade5,
     jambrag_no, jamb_score, degree_title, name_of_university, year_of_graduation,
     achieved_grade, year_of_service, institution_name, topic,
-    transcript, hndcertificate, nysc, waec_neco, affidavit, jamb_result, masters_certificate
+    transcript, hndcertificate, nysc, waec_neco, affidavit, jamb_result, masters_certificate,fullname
 ) {
     const query = `
         INSERT INTO application (
@@ -45,8 +45,8 @@ async function applicationForm(
             subject1, grade1, subject2, grade2, subject3, grade3, subject4, grade4, subject5, grade5,
             jambrag_no, jamb_score, degree_title, name_of_university, year_of_graduation,
             achieved_grade, year_of_service, institution_name, topic,
-            transcript, hndcertificate, nysc, waec_neco, affidavit, jamb_result, masters_certificate
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            transcript, hndcertificate, nysc, waec_neco, affidavit, jamb_result, masters_certificate,fullname
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
     `;
 
     try {
@@ -55,7 +55,7 @@ async function applicationForm(
             subject1, grade1, subject2, grade2, subject3, grade3, subject4, grade4, subject5, grade5,
             jambrag_no, jamb_score, degree_title, name_of_university, year_of_graduation,
             achieved_grade, year_of_service, institution_name, topic,
-            transcript, hndcertificate, nysc, waec_neco, affidavit, jamb_result, masters_certificate
+            transcript, hndcertificate, nysc, waec_neco, affidavit, jamb_result, masters_certificate,fullname
         ]);
         return result;
     } catch (error) {
@@ -165,9 +165,8 @@ async function verifyEmail(email) {
         const [result] = await db.execute(query, [email])
         return result.affectedRows > 0
     } catch (error) {
-        console.error('Error updating email verification status:', error);
+       console.error('Error updating email verification status:', error);
         throw error;
-
     }
 }
 
