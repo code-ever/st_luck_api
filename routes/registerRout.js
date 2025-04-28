@@ -75,18 +75,38 @@ route.post('/', upload.single('passport'), async (req, res) => {
 });
 
 route.get("/", async (req, res) => {
-    const {email} = req.body
+    const { is_verify } = req.query;
     try {
-        const students = await getUser(email);
-
-        if (!students) {
-            return res.status(400).json({ message: 'No student found' });
+        if (!is_verify) {
+            return res.status(400).json({ message: 'Token is missing' });
         }
-        return res.status(200).json({ message: 'Student found', data: students });
-        
+        const user = await getUserByToken(is_verify);
+        if (!user) {
+            return res.status(404).json({ message: 'Invalid or expired token' }); // Stop execution if token is invalid or expired
+        }
+
+        if (!user.email) {
+            return res.status(400).json({ message: 'User email is missing, cannot verify' });
+        }
+
+        const updateUser = await verifyEmail(user.email);
+
+        if (updateUser) {
+            // return res.json({
+            //     success: true,
+            //     message: 'Email successfully verified!',
+            //     redirectUrl: `http://localhost:5173/continue?email=${user.email}`
+            // });
+            return res.redirect(303, `https://st-luck-portal-ui.vercel.app/continue?email=${user.email}`);
+            // return res.redirect(303, `${process.env.APP_URL_API}/continue?email=${user.email}`);
+        } else {
+            return res.status(400).json({ message: 'Something went wrong while verifying the email' });
+        }
     } catch (error) {
-        res.status(500).json({ message: 'Something went wrong', error: error.message });
+        console.log('Error:', error.message);
+        return res.status(500).json({ message: 'Something went wrong' });
     }
 });
+
 
 module.exports = route;
