@@ -50,11 +50,11 @@ route.post('/', upload.single('passport'), async (req, res) => {
         const saveData = await Register(fullname, dob, gender, so, nationality, lga, address, number, email, hashed, secure_url);
         if (saveData) {
             const randomToken = randomstring.generate();
-            const subject = 'Verify Registration';
-            const message = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
+            const subjectEmail = 'Verify Registration';
+            const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
 
-           // await sendEmail(email, subjectEmail, content);
-            await sendMailgun(message, email, subject)
+          //  await sendEmail(email, subjectEmail, content);
+            await sendMailgun(content, email, subjectEmail)
 
             await updateUser(randomToken, email);
 
