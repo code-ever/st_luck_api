@@ -25,12 +25,12 @@ route.post("/", upload.fields([
 
         // Validate essential fields
         if (!programme_of_interest || !course_of_study || !mode_of_study || !preferred_university || !email) {
-            return res.status(400).json({ message: "Some required fields are missing" });
+            return res.status(400).json({ error: "Some required fields are missing" });
         }
 
         const existingUser = await applicationEX(email);
         if (existingUser) {
-            return res.status(400).json({ message: "This email is already registered" });
+            return res.status(400).json({ error: "This email is already registered" });
         }
         // Initialize an object to store the URLs for each file uploaded
         const uploadedFiles = {};
@@ -53,7 +53,7 @@ route.post("/", upload.fields([
                 }
             }
         } catch (fileUploadError) {
-            return res.status(500).json({ message: "Error uploading files", error: fileUploadError.message });
+            return res.status(500).json({ error: "Error uploading files", error: fileUploadError.message });
         }
 
         // Insert application data into the database
@@ -95,6 +95,7 @@ route.post("/", upload.fields([
             return res.status(201).json({
                 message: "Application submitted successfully",
                 data: saveApplication,
+                status:200
             });
 
         } catch (dbError) {
