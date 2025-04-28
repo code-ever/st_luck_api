@@ -129,8 +129,8 @@ route.get("/", async (req, res) => {
             //     message: 'Email successfully verified!',
             //     redirectUrl: `http://localhost:5173/continue?email=${user.email}`
             // });
-            // return res.redirect(303, `http://localhost:5173/continue?email=${user.email}`);
-            return res.redirect(303, `${process.env.APP_URL_API}/continue?email=${user.email}`);
+            return res.redirect(303, `https://st-luck-portal-ui.vercel.app/continue?email=${user.email}`);
+            // return res.redirect(303, `${process.env.APP_URL_API}/continue?email=${user.email}`);
         } else {
             return res.status(400).json({ message: 'Something went wrong while verifying the email' });
         }
