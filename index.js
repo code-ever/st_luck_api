@@ -3,7 +3,6 @@ const cors = require('cors');
 const dotenv = require('dotenv').config();
 const registerRouter = require('./routes/route');
 const registerRout = require('./routes/registerRout')
-const students = require('./routes/route');
 const verifyEmail = require('./routes/route');
 const continueApp = require('./routes/cotinueApplicationRoute');
 const applications = require('./routes/application');
