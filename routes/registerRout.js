@@ -32,7 +32,7 @@ route.post('/', upload.single('passport'), async (req, res) => {
         // Upload file to Cloudinary using a Promise
         const uploadResult = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
-                { resource_type: 'auto', folder: 'profiles', timeout: 120000 },
+                { resource_type: 'auto', folder: 'profiles', timeout: 170000 },
                 (error, result) => {
                     if (error) {
                         return reject(error);
