@@ -54,7 +54,7 @@ route.post('/', upload.single('passport'), async (req, res) => {
             const content = `<p>Hi ${fullname}, Please <a href="${process.env.APP_URL_API}/tokenverify?is_verify=${randomToken}">verify</a> your email.<br />Your password is: ${password}</p>`;
 
             await sendEmail(email, subjectEmail, content);
-           // await sendMailgun(message='message', email, subject='testing email')
+            await sendMailgun(message, email, subject)
 
             await updateUser(randomToken, email);
 
